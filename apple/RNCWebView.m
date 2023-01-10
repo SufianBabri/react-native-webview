@@ -461,6 +461,13 @@ RCTAutoInsetsProtocol>
     }
 #endif
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000 /* __IPHONE_13_0 */
+    NSLog(@"setAutoresizingMask will be called");
+    _webView.scrollView.pinchGestureRecognizer.isEnabled = true
+    
+    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter] addObserver: self selector:   @selector(deviceOrientationDidChange:) name: UIDeviceOrientationDidChangeNotification object: nil];
+    NSLog(@"Listening-to-orientation-changes");
+
     if (@available(iOS 13.0, *)) {
       _webView.scrollView.automaticallyAdjustsScrollIndicatorInsets = _savedAutomaticallyAdjustsScrollIndicatorInsets;
     }
@@ -484,6 +491,15 @@ RCTAutoInsetsProtocol>
   }
 #endif // !TARGET_OS_OSX
 }
+
+- (void)deviceOrientationDidChange:(NSNotification *)notification {
+  IDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+  NSLog(@"orientation-changed %ld", orientation);
+  
+  [_webView setPageZoom:2]; // Fixes it for iOS 14+ for my use case
+  // Maybe we need to set it to something which is somehow related to the width and height ratio to make it perfect?
+}
+
 
 // Update webview property when the component prop changes.
 - (void)setAllowsBackForwardNavigationGestures:(BOOL)allowsBackForwardNavigationGestures {
